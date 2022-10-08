@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using API.Data;
 using API.Entities;
 using Microsoft.AspNetCore.Identity;
+using System.Threading.Tasks;
 
 namespace API.Extensions
 {
@@ -32,6 +33,22 @@ namespace API.Extensions
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["TokenKey"])),
                         ValidateIssuer = false,
                         ValidateAudience = false,
+                    };
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            var accessToken = context.Request.Query["access_token"];
+
+                            var path = context.HttpContext.Request.Path;
+                            if (!string.IsNullOrEmpty(accessToken) &&
+                                path.StartsWithSegments("/hubs"))
+                            {
+                                context.Token = accessToken;
+                            }
+
+                            return Task.CompletedTask;
+                        }
                     };
                 });
             services.AddAuthorization(opt =>
