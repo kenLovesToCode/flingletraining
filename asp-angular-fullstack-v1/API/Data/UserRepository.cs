@@ -46,9 +46,9 @@ namespace API.Data
                 "created" => query.OrderByDescending(u => u.Created),
                 _ => query.OrderByDescending(u => u.LastActive)
             };
-            
+
             return await PagedList<MemberDto>.CreateAsync(query.ProjectTo<MemberDto>(_mapper
-                .ConfigurationProvider).AsNoTracking(), 
+                .ConfigurationProvider).AsNoTracking(),
                     userParams.PageNumber, userParams.PageSize);
         }
 
@@ -71,9 +71,11 @@ namespace API.Data
                 .ToListAsync();
         }
 
-        public async Task<bool> SaveAllAsync()
+        public async Task<string> GetUserGender(string username)
         {
-            return await _context.SaveChangesAsync() > 0;
+            return await _context.Users
+                .Where(x => x.UserName == username)
+                .Select(x => x.Gender).FirstOrDefaultAsync();
         }
 
         public void Update(AppUser user)
